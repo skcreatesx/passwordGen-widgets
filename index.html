@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Password Generator Widget</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-color: #f4f8fc;
+      --card-bg: #ffffff;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --primary-light: #eff6ff;
+      --accent-track: #dbeafe;
+      --border-color: #e2e8f0;
+      --shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+      --radius: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 16px;
+      color: var(--text-main);
+    }
+
+    .widget-card {
+      background: var(--card-bg);
+      width: 100%;
+      max-width: 380px;
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border-color);
+    }
+
+    .widget-header {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .widget-header span {
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--primary-light);
+      color: var(--primary);
+      padding: 2px 8px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .display-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+      background-color: var(--bg-color);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 8px 12px;
+      margin-bottom: 20px;
+    }
+
+    .display-input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--primary);
+      padding-right: 32px;
+      letter-spacing: 0.5px;
+    }
+
+    .copy-btn {
+      position: absolute;
+      right: 8px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      color: var(--text-muted);
+      padding: 6px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .copy-btn:hover {
+      color: var(--primary);
+      background-color: var(--card-bg);
+    }
+
+    .copy-tooltip {
+      position: absolute;
+      top: -28px;
+      right: 6px;
+      background: var(--text-main);
+      color: #fff;
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .copy-tooltip.show {
+      opacity: 1;
+    }
+
+    .section-label {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+    }
+
+    .slider-container {
+      margin-bottom: 20px;
+    }
+
+    .slider-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .length-value {
+      font-weight: 700;
+      color: var(--primary);
+      background: var(--primary-light);
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: var(--accent-track);
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--primary);
+      cursor: pointer;
+      transition: transform 0.1s ease;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-main);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .checkbox-label input[type="checkbox"] {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border: 1.5px solid var(--border-color);
+      border-radius: 4px;
+      outline: none;
+      cursor: pointer;
+      display: grid;
+      place-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .checkbox-label input[type="checkbox"]:checked {
+      background-color: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .checkbox-label input[type="checkbox"]:checked::before {
+      content: "✓";
+      color: white;
+      font-size: 10px;
+      font-weight: bold;
+    }
+
+    .divider {
+      height: 1px;
+      background-color: var(--border-color);
+      margin: 16px 0;
+    }
+
+    .generate-btn {
+      width: 100%;
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s ease, transform 0.1s ease;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .generate-btn:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .generate-btn:active {
+      transform: scale(0.99);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="widget-card">
+    <div class="widget-header">
+      Password Generator
+      <span>Notion</span>
+    </div>
+
+    <div class="display-container">
+      <input type="text" id="password-display" class="display-input" readonly>
+      <div id="tooltip" class="copy-tooltip">Copied!</div>
+      <button id="copy-btn" class="copy-btn" title="Copy to clipboard">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+      </button>
+    </div>
+
+    <div class="slider-container">
+      <div class="slider-header">
+        <span style="color: var(--text-muted)">Length</span>
+        <span id="length-val" class="length-value">20</span>
+      </div>
+      <input type="range" id="length-slider" min="8" max="50" value="20">
+    </div>
+
+    <div class="section-label">Characters</div>
+    <div class="options-grid">
+      <label class="checkbox-label">
+        <input type="checkbox" id="opt-lowercase" checked> Lowercase
+      </label>
+      <label class="checkbox-label">
+        <input type="checkbox" id="opt-uppercase" checked> Uppercase
+      </label>
+      <label class="checkbox-label">
+        <input type="checkbox" id="opt-numbers" checked> Numbers
+      </label>
+      <label class="checkbox-label">
+        <input type="checkbox" id="opt-symbols" checked> Symbols
+      </label>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="section-label">Rules</div>
+    <div class="options-grid">
+      <label class="checkbox-label">
+        <input type="checkbox" id="opt-no-similar"> No Similar
+      </label>
+      <label class="checkbox-label">
+        <input type="checkbox" id="opt-no-repeat"> No Repeat
+      </label>
+      <label class="checkbox-label" style="grid-column: span 2;">
+        <input type="checkbox" id="opt-letter-first"> Start with Letter
+      </label>
+    </div>
+
+    <button id="generate-btn" class="generate-btn">
+      Generate Password
+    </button>
+  </div>
+
+  <script>
+    const CHAR_SETS = {
+      lowercase: 'abcdefghijklmnopqrstuvwxyz',
+      uppercase: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+      numbers: '0123456789',
+      symbols: '!@#$%^&*()_+-=[]{}|;:,.<>?'
+    };
+
+    const SIMILAR_CHARS = /[1lI0Oo]/g;
+
+    const displayInput = document.getElementById('password-display');
+    const copyBtn = document.getElementById('copy-btn');
+    const tooltip = document.getElementById('tooltip');
+    const generateBtn = document.getElementById('generate-btn');
+    const lengthSlider = document.getElementById('length-slider');
+    const lengthVal = document.getElementById('length-val');
+
+    const optLowercase = document.getElementById('opt-lowercase');
+    const optUppercase = document.getElementById('opt-uppercase');
+    const optNumbers = document.getElementById('opt-numbers');
+    const optSymbols = document.getElementById('opt-symbols');
+    const optNoSimilar = document.getElementById('opt-no-similar');
+    const optNoRepeat = document.getElementById('opt-no-repeat');
+    const optLetterFirst = document.getElementById('opt-letter-first');
+
+    lengthSlider.addEventListener('input', (e) => {
+      lengthVal.textContent = e.target.value;
+    });
+
+    function getRandomChar(pool) {
+      const cryptoObj = window.crypto || window.msCrypto;
+      const randomValues = new Uint32Array(1);
+      cryptoObj.getRandomValues(randomValues);
+      return pool[randomValues[0] % pool.length];
+    }
+
+    function generatePassword() {
+      const length = parseInt(lengthSlider.value, 10);
+      const noSimilar = optNoSimilar.checked;
+      const noRepeat = optNoRepeat.checked;
+      const letterFirst = optLetterFirst.checked;
+
+      let pool = '';
+      let letterPool = '';
+
+      if (optLowercase.checked) {
+        let chars = CHAR_SETS.lowercase;
+        if (noSimilar) chars = chars.replace(SIMILAR_CHARS, '');
+        pool += chars;
+        letterPool += chars;
+      }
+
+      if (optUppercase.checked) {
+        let chars = CHAR_SETS.uppercase;
+        if (noSimilar) chars = chars.replace(SIMILAR_CHARS, '');
+        pool += chars;
+        letterPool += chars;
+      }
+
+      if (optNumbers.checked) {
+        let chars = CHAR_SETS.numbers;
+        if (noSimilar) chars = chars.replace(SIMILAR_CHARS, '');
+        pool += chars;
+      }
+
+      if (optSymbols.checked) {
+        let chars = CHAR_SETS.symbols;
+        if (noSimilar) chars = chars.replace(SIMILAR_CHARS, '');
+        pool += chars;
+      }
+
+      if (!pool) {
+        displayInput.value = 'Select min 1 option';
+        return;
+      }
+
+      if (letterFirst && !letterPool) {
+        displayInput.value = 'Need letter option';
+        return;
+      }
+
+      if (noRepeat && length > pool.length) {
+        displayInput.value = 'Length exceeds pool';
+        return;
+      }
+
+      let password = [];
+      let availablePool = pool;
+
+      if (letterFirst) {
+        const firstChar = getRandomChar(letterPool);
+        password.push(firstChar);
+        if (noRepeat) {
+          availablePool = availablePool.replace(firstChar, '');
+        }
+      }
+
+      while (password.length < length) {
+        const nextChar = getRandomChar(availablePool);
+        password.push(nextChar);
+        if (noRepeat) {
+          availablePool = availablePool.replace(nextChar, '');
+        }
+      }
+
+      displayInput.value = password.join('');
+    }
+
+    copyBtn.addEventListener('click', () => {
+      if (!displayInput.value || displayInput.value.includes(' ')) return;
+      
+      navigator.clipboard.writeText(displayInput.value).then(() => {
+        tooltip.classList.add('show');
+        setTimeout(() => tooltip.classList.remove('show'), 1500);
+      });
+    });
+
+    [
+      generateBtn, lengthSlider, optLowercase, optUppercase, 
+      optNumbers, optSymbols, optNoSimilar, optNoRepeat, optLetterFirst
+    ].forEach(element => {
+      element.addEventListener('change', generatePassword);
+    });
+
+    generateBtn.addEventListener('click', generatePassword);
+
+    generatePassword();
+  </script>
+</body>
+</html>
