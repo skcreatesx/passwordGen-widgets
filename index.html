@@ -430,13 +430,35 @@
       displayInput.value = password.join('');
     }
 
+    function showTooltip() {
+      tooltip.classList.add('show');
+      setTimeout(() => tooltip.classList.remove('show'), 1500);
+    }
+
+    function fallbackCopy() {
+      displayInput.select();
+      displayInput.setSelectionRange(0, 99999);
+      try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+          showTooltip();
+        }
+      } catch (err) {
+        console.error('ExecCommand copy failed: ', err);
+      }
+      window.getSelection().removeAllRanges();
+    }
+
     copyBtn.addEventListener('click', () => {
       if (!displayInput.value || displayInput.value.includes(' ')) return;
       
-      navigator.clipboard.writeText(displayInput.value).then(() => {
-        tooltip.classList.add('show');
-        setTimeout(() => tooltip.classList.remove('show'), 1500);
-      });
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(displayInput.value)
+          .then(() => showTooltip())
+          .catch(() => fallbackCopy());
+      } else {
+        fallbackCopy();
+      }
     });
 
     [
